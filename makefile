@@ -1,23 +1,23 @@
-CC = gcc
-AS = gcc
-CFLAGS = -Wall -g -fPIC -Iinclude
-LDFLAGS = -ldl
+CC=gcc
+CFLAGS=-Wall -g -fPIC -Iinclude
+LDFLAGS=-ldl
 
-C_SRCS := $(wildcard src/*.c)
-C_OBJS := $(C_SRCS:.c=.o)
-ASM_SRCS := $(wildcard src/asm/*.s)
-ASM_OBJS := $(ASM_SRCS:.s=.o)
+SRC_ASM=src/asm/dump_registers.s src/asm/dump_backtrace.s
+OBJ_ASM=$(SRC_ASM:.s=.o)
+TEST_SRC=test/main.c
+TEST_OBJ=test/main.o
+TARGET=test/main
 
-all: test/main
+all: $(TARGET)
 
-src/%.o: src/%.c
+$(TARGET): $(OBJ_ASM) $(TEST_OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+%.o: %.s
 	$(CC) $(CFLAGS) -c $< -o $@
 
-src/asm/%.o: src/asm/%.s
-	$(AS) $(CFLAGS) -c $< -o $@
-
-test/main: $(C_OBJS) $(ASM_OBJS) test/main.c
-	$(CC) $(CFLAGS) -o $@ $(C_OBJS) $(ASM_OBJS) test/main.c $(LDFLAGS)
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f src/*.o src/asm/*.o test/main
+	rm -f src/asm/*.o test/*.o $(TARGET)

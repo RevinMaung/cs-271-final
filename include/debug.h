@@ -1,10 +1,15 @@
 #ifndef DEBUG_H
 #define DEBUG_H
 
-// Print all general-purpose register values (int and hex)
-void dump_registers(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Print backtrace with function names and addresses
+void dump_registers(void);
 void dump_backtrace(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // DEBUG_H
