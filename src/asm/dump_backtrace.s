@@ -1,9 +1,3 @@
-.section .rodata
-bt_fmt: .string "%3ld: [%lx] %s () %s\n"
-
-.section .bss
-    .lcomm info, 32
-
 .section .text
 .globl dump_backtrace
 .type dump_backtrace, @function
@@ -12,43 +6,37 @@ dump_backtrace:
     pushq %rbp
     movq %rsp, %rbp
 
-    movq %rbp, %rax        # current frame pointer
-    movl $0, %ebx          # frame index
-    movl $16, %ecx         # max frames
+    movq %rbp, %rax           # Current frame pointer
+    movl $0, %ecx             # Frame counter
 
 bt_loop:
-    movq 8(%rax), %rdx     # return address
+    movq 8(%rax), %rdx        # Saved return address
     testq %rdx, %rdx
     je bt_end
 
-    # Prepare dladdr(&addr, &info)
-    movq %rdx, %rdi
-    leaq info(%rip), %rsi
-    call dladdr
-
-    # Prepare printf("%3ld: [%lx] %s () %s\n", idx, addr, symname, fname)
-    leaq bt_fmt(%rip), %rdi          # format string
-    movslq %ebx, %rsi                # idx
-    movq %rdx, %rdx                  # addr
-    leaq info(%rip), %rcx
-    movq 16(%rcx), %r8               # info.dli_sname
-    movq 24(%rcx), %r9               # info.dli_fname
-
-    subq $8, %rsp                    # align stack
+    movq %rdx, %rsi
+    leaq bt_fmt(%rip), %rdi
+    xor %rax, %rax
     call printf
-    addq $8, %rsp
 
-    movq (%rax), %rax                # move to previous frame
+    movq (%rbp), %rax         # Next frame pointer (previous rbp)
     testq %rax, %rax
     je bt_end
-    inc %ebx
-    cmp %ebx, %ecx
-    je bt_end
-    jmp bt_loop
+
+    # Prevent infinite loops by breaking if frame pointer decreases or doesn't change
+    cmpq %rbp, %rax
+    jbe bt_end
+
+    movq %rax, %rbp           # Move to previous frame
+    inc %ecx
+    cmp $10, %ecx             # Limit backtrace to 10 frames
+    jl bt_loop
 
 bt_end:
     popq %rbp
     ret
 
+.section .rodata
+bt_fmt: .string "Return address: 0x%016lx\n"
+
 .extern printf
-.extern dladdr

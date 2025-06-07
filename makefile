@@ -10,7 +10,7 @@ TARGET=test/main
 
 all: $(TARGET)
 
-$(TARGET): $(OBJ_ASM) $(TEST_OBJ)
+$(TARGET): $(OBJ_ASM) $(TEST_OBJ) src/debug.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.s
@@ -19,5 +19,11 @@ $(TARGET): $(OBJ_ASM) $(TEST_OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+src/debug.o: src/debug.c include/debug.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(TEST_OBJ): $(TEST_SRC) include/debug.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 clean:
-	rm -f src/asm/*.o test/*.o $(TARGET)
+	rm -f src/asm/*.o test/*.o src/*.o $(TARGET)
