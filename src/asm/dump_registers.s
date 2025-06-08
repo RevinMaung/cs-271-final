@@ -1,70 +1,33 @@
-.section .text
-.globl dump_registers
-.type dump_registers, @function
-
+    .extern _debug_dump_registers
+    .globl  dump_registers
+    .type   dump_registers, @function
 dump_registers:
-    pushq %rbp
-    movq %rsp, %rbp
+    /* allocate space for 16 longs on the stack */
+    subq    $(16*8), %rsp
 
-    # Print RAX
-    movq %rax, %rsi
-    leaq rax_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
+    /* spill registers into that buffer at RSP+offset */
+    movq    %rax, 0(%rsp)      /* regs[0] = rax */
+    movq    %rbx, 8(%rsp)      /* regs[1] = rbx */
+    movq    %rcx,16(%rsp)      /* regs[2] = rcx */
+    movq    %rdx,24(%rsp)      /* regs[3] = rdx */
+    movq    %rsi,32(%rsp)      /* regs[4] = rsi */
+    movq    %rdi,40(%rsp)      /* regs[5] = rdi */
+    movq    %rbp,48(%rsp)      /* regs[6] = rbp */
+    /* regs[7] = rsp will be computed in C */
 
-    # Print RBX
-    movq %rbx, %rsi
-    leaq rbx_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
+    movq    %r8,  64(%rsp)     /* regs[8]  = r8  */
+    movq    %r9,  72(%rsp)     /* regs[9]  = r9  */
+    movq    %r10, 80(%rsp)     /* regs[10] = r10 */
+    movq    %r11, 88(%rsp)     /* regs[11] = r11 */
+    movq    %r12, 96(%rsp)     /* regs[12] = r12 */
+    movq    %r13,104(%rsp)     /* regs[13] = r13 */
+    movq    %r14,112(%rsp)     /* regs[14] = r14 */
+    movq    %r15,120(%rsp)     /* regs[15] = r15 */
 
-    # Print RCX
-    movq %rcx, %rsi
-    leaq rcx_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
+    /* pass pointer to that buffer as first arg */
+    movq    %rsp, %rdi
+    call    _debug_dump_registers
 
-    # Print RDX
-    movq %rdx, %rsi
-    leaq rdx_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
-
-    # Print RSI
-    movq %rsi, %rsi
-    leaq rsi_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
-
-    # Print RDI
-    movq %rdi, %rsi
-    leaq rdi_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
-
-    # Print RSP
-    movq %rsp, %rsi
-    leaq rsp_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
-
-    # Print RBP
-    movq %rbp, %rsi
-    leaq rbp_fmt(%rip), %rdi
-    xor %rax, %rax
-    call printf
-
-    popq %rbp
+    /* tear down stack frame */
+    addq    $(16*8), %rsp
     ret
-
-.section .rodata
-rax_fmt: .string "RAX = 0x%016lx\n"
-rbx_fmt: .string "RBX = 0x%016lx\n"
-rcx_fmt: .string "RCX = 0x%016lx\n"
-rdx_fmt: .string "RDX = 0x%016lx\n"
-rsi_fmt: .string "RSI = 0x%016lx\n"
-rdi_fmt: .string "RDI = 0x%016lx\n"
-rsp_fmt: .string "RSP = 0x%016lx\n"
-rbp_fmt: .string "RBP = 0x%016lx\n"
-
-.extern printf
