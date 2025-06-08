@@ -1,15 +1,6 @@
 #ifndef DEBUG_H
 #define DEBUG_H
+extern void dump_registers(void);
+extern void dump_backtrace(void);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void dump_registers(void);
-void dump_backtrace(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif // DEBUG_H
+#endif 
