@@ -1,29 +1,18 @@
-CC=gcc
-CFLAGS=-Wall -g -fPIC -Iinclude
-LDFLAGS=-ldl
+CFLAGS=-O0 -g -fno-omit-frame-pointer -I./include
+LDFLAGS=-rdynamic -ldl -L./lib
 
-SRC_ASM=src/asm/dump_registers.s src/asm/dump_backtrace.s
-OBJ_ASM=$(SRC_ASM:.s=.o)
-TEST_SRC=test/main.c
-TEST_OBJ=test/main.o
-TARGET=test/main
+AS_SRCS=$(shell find src/ -name '*.s')
+C_SRCS=$(shell find src/ -name '*.c')
+AS_OBJS=$(AS_SRCS:.s=.o)
+C_OBJS=$(C_SRCS:.c=.o)
 
-all: $(TARGET)
+all: lib/libdebug.o test/main
+	test/main
 
-$(TARGET): $(OBJ_ASM) $(TEST_OBJ) src/debug.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+lib/libdebug.o: $(AS_OBJS) $(C_OBJS)
+	ld -r -o $@ $^
 
-%.o: %.s
-	$(CC) $(CFLAGS) -c $< -o $@
+test/main: test/main.c lib/libdebug.o
+	$(LINK.c) -o $@ $^
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
 
-src/debug.o: src/debug.c include/debug.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(TEST_OBJ): $(TEST_SRC) include/debug.h
-	$(CC) $(CFLAGS) -c $< -o $@
-
-clean:
-	rm -f src/asm/*.o test/*.o src/*.o $(TARGET)
