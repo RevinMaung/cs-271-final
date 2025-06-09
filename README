@@ -1,6 +1,6 @@
 Debugging: Walking the Stack (Final Project)
 CS 271
-By: Salem Demssie, Ryan Nguyen, Sualeh RahmanSualeh Rahman
+By: Salem Demssie, La Min(Revin) Maung, FeiFan Qi
 Overview
 
 This project implements a debugging library using a mix of C and x86-64 assembly. It provides two key runtime debugging tools:
