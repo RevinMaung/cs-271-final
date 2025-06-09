@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include <stdio.h>
-#include <dlfcn.h>     // for Dl_info and dladdr()
-#include <libgen.h>    // for basename()
-#include <string.h>    // for strcmp()
+#include <dlfcn.h>     
+#include <libgen.h>    
+#include <string.h>    
 #include "debug.h"
 
 /* pull in the format string from dump_backtrace.s */
@@ -10,10 +10,12 @@ extern const char backtrace_format_str[];
 
 /*
  * Called from dump_registers.s:
- *   regs -> an array[16] of longs spilled on the stack.
- *   We reconstruct the original RSP as regs + 16*sizeof(long).
+ *   regs =  an array[16] of longs spilled on the stack.
+ *   Reconstruct the original RSP as regs + 16*sizeof(long).
  */
+
 void _debug_dump_registers(long const *regs) {
+
     static const char *regnames[16] = {
         "rax","rbx","rcx","rdx",
         "rsi","rdi","rbp","rsp",
@@ -36,10 +38,11 @@ void _debug_dump_registers(long const *regs) {
 
 /*
  * Called from dump_backtrace.s. Walk the frame-pointer chain,
- * stopping at “_start”, after 64 frames, or if the chain ever goes
- * non-monotonically “up” the stack.
+ * stopping at _start, after 64 frames, or if the chain ever goes
+ * up the stack.
  */
 void _debug_dump_backtrace(void) {
+
     void **rbp;
     __asm__ volatile("movq %%rbp, %0" : "=r"(rbp));
 
@@ -63,16 +66,18 @@ void _debug_dump_backtrace(void) {
                sym,
                file);
 
-        /* stop once we hit the real entry point */
+        /* stop at the entry point */
         if (info.dli_sname && strcmp(info.dli_sname, "_start") == 0) {
             break;
         }
 
-        /* get the next frame and verify it’s strictly deeper */
+        /* get the next frame and verify if deeper or not */
         void **next_rbp = (void **)*rbp;
+
         if (!next_rbp || next_rbp <= last_rbp) {
             break;
         }
+
         last_rbp = next_rbp;
         rbp      = next_rbp;
         depth++;

@@ -2,7 +2,7 @@
     .globl  dump_backtrace
     .type   dump_backtrace, @function
 dump_backtrace:
-    /* 交给 C 实现 */
+   
     call    _debug_dump_backtrace
     ret
 

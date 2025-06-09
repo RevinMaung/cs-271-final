@@ -13,6 +13,7 @@ dump_registers:
     movq    %rsi,32(%rsp)      /* regs[4] = rsi */
     movq    %rdi,40(%rsp)      /* regs[5] = rdi */
     movq    %rbp,48(%rsp)      /* regs[6] = rbp */
+
     /* regs[7] = rsp will be computed in C */
 
     movq    %r8,  64(%rsp)     /* regs[8]  = r8  */
